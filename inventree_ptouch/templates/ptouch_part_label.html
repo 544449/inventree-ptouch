@@ -1,0 +1,116 @@
+{% extends "label/label_base.html" %}
+{% load l10n i18n barcode %}
+{% block style %}
+.label {
+    position: absolute;
+    top: 0mm;
+    left: 0mm;
+    {% localize off %}
+    width: {{ width }}mm;
+    height: {{ height }}mm;
+    {% endlocalize %}
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+}
+.code {
+    position: absolute;
+    left: 0mm;
+    top: 0mm;
+    image-rendering: pixelated;
+}
+.name {
+    position: absolute;
+    top: 0mm;
+    right: 0mm;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.txt {
+    position: absolute;
+    top: 0mm;
+    display: table;
+}
+.txt .name {
+    position: static;
+}
+.dscr {
+    display: table-caption;
+    caption-side: bottom;
+    orphans: 1;
+    widows: 1;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+.t4 .code { top: 0.282222mm; width: 9.595556mm; height: 2.822222mm; }
+.t4 .name { left: 9.877778mm; line-height: 3.386667mm; font-size: 2.3mm; }
+.t4 .n26 { font-size: 2.0mm; }
+
+.t6 .code { top: 0.141111mm; width: 14.393333mm; height: 4.233333mm; }
+.t6 .name { left: 14.816667mm; line-height: 4.515556mm; font-size: 3.0mm; }
+.t6 .n18 { font-size: 2.4mm; }
+.t6 .n22 { font-size: 2.1mm; }
+.t6 .n26 { font-size: 1.8mm; }
+
+.t9 .code { width: 23.988889mm; height: 7.055556mm; }
+.t9 .name { left: 24.694444mm; line-height: 7.055556mm; font-size: 3.0mm; }
+.t9 .n14 { font-size: 2.2mm; }
+.t9 .n18 { font-size: 1.75mm; }
+.t9 .n22 { font-size: 1.55mm; }
+.t9 .n26 { font-size: 1.3mm; }
+
+.t12s .code { width: 8.89mm; height: 8.89mm; }
+.t12s .txt { left: 10.018889mm; min-width: 25mm; }
+.t12s .name { line-height: 3.386667mm; font-size: 3.0mm; }
+.t12s .n18 { font-size: 2.5mm; }
+.t12s .n22 { font-size: 2.2mm; }
+.t12s .n26 { font-size: 1.9mm; }
+.t12s .dscr { height: 5.624444mm; line-height: 2.812222mm; font-size: 2.1mm; }
+
+.t12 .code { width: 9.736667mm; height: 9.736667mm; }
+.t12 .txt { left: 10.724444mm; min-width: 25mm; }
+.t12 .name { line-height: 3.668889mm; font-size: 3.2mm; }
+.t12 .n18 { font-size: 2.7mm; }
+.t12 .n22 { font-size: 2.4mm; }
+.t12 .n26 { font-size: 2.0mm; }
+.t12 .dscr { height: 6.188889mm; line-height: 3.094444mm; font-size: 2.3mm; }
+
+.t18 .code { width: 14.816667mm; height: 14.816667mm; }
+.t18 .txt { left: 16.368889mm; min-width: 40mm; }
+.t18 .name { line-height: 5.644444mm; font-size: 5.1mm; }
+.t18 .n18 { font-size: 4.5mm; }
+.t18 .n22 { font-size: 3.8mm; }
+.t18 .n26 { font-size: 3.2mm; }
+.t18 .dscr { height: 9.011111mm; line-height: 4.505556mm; font-size: 3.4mm; }
+
+.t24 .code { width: 17.78mm; height: 17.78mm; }
+.t24 .txt { left: 19.473333mm; min-width: 45.714286mm; }
+.t24 .name { line-height: 6.773333mm; font-size: 5.85mm; }
+.t24 .n18 { font-size: 5.1mm; }
+.t24 .n22 { font-size: 4.4mm; }
+.t24 .n26 { font-size: 3.65mm; }
+.t24 .dscr { height: 10.986667mm; line-height: 5.493333mm; font-size: 4.1mm; }
+{% endblock style %}
+{% block content %}
+{% with n=part.name|length %}
+<div class="label {% if height < 4 %}t4{% elif height < 6 %}t6{% elif height < 8 %}t9{% elif height < 9.5 %}t12s{% elif height < 12 %}t12{% elif height < 17 %}t18{% else %}t24{% endif %}">
+    {% if height < 8 %}
+    {% with pk=part.pk|stringformat:"d" %}
+    <img class="code" alt="{% trans 'Data Matrix' %}" src="{% if height < 4 %}{% datamatrix "INV-PA"|add:pk rectangular=True scale=2 %}{% elif height < 6 %}{% datamatrix "INV-PA"|add:pk rectangular=True scale=3 %}{% else %}{% datamatrix "INV-PA"|add:pk rectangular=True scale=5 %}{% endif %}">
+    {% endwith %}
+    {% else %}
+    <img class="code" alt="{% trans 'QR Code' %}" src="{% if height < 9.5 %}{% qrcode qr_data box_size=3 border=0 optimize=0 %}{% elif height < 12 %}{% qrcode qr_data box_size=3 optimize=0 %}{% elif height < 17 %}{% qrcode qr_data box_size=5 border=0 optimize=0 %}{% else %}{% qrcode qr_data box_size=6 border=0 optimize=0 %}{% endif %}">
+    {% endif %}
+    {% if height >= 8 %}
+    <div class="txt">
+        <div class="name {% if n <= 10 %}n10{% elif n <= 14 %}n14{% elif n <= 18 %}n18{% elif n <= 22 %}n22{% else %}n26{% endif %}">{{ part.name }}</div>
+        <div class="dscr">{{ part.description }}</div>
+    </div>
+    {% else %}
+    <div class="name {% if n <= 10 %}n10{% elif n <= 14 %}n14{% elif n <= 18 %}n18{% elif n <= 22 %}n22{% else %}n26{% endif %}">{{ part.name }}</div>
+    {% endif %}
+</div>
+{% endwith %}
+{% endblock content %}
